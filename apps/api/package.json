@@ -1,0 +1,32 @@
+{
+  "name": "api",
+  "version": "0.0.0",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "dev": "fastify start -l info -P -w -p 3001 -r ts-node/register src/app.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@fastify/autoload": "^5.7.1",
+    "@fastify/cors": "^8.3.0",
+    "@fastify/jwt": "^7.2.0",
+    "@fastify/multipart": "8",
+    "@fastify/websocket": "^8.2.0",
+    "@repo/db": "*",
+    "dotenv": "^16.3.1",
+    "fast-csv": "^5.0.7",
+    "fastify": "^4.21.0",
+    "fastify-plugin": "^4.5.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.5.0",
+    "@vitest/ui": "^4.1.8",
+    "fastify-cli": "^5.8.0",
+    "typescript": "^5.1.6",
+    "vitest": "^4.1.8"
+  }
+}

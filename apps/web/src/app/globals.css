@@ -1,0 +1,41 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* YipitData Full Brand Palette */
+    --brand-navy: 215 100% 11%;     /* #001b3a - Deep authoritative primary */
+    --brand-blue: 216 100% 50%;    /* #0066ff - Electric Blue for CTAs */
+    --brand-teal: 190 58% 27%;      /* #1d606d - Professional brand teal/blue */
+    --brand-green: 160 84% 39%;    /* #10b981 - Success Green */
+    
+    --background: 210 40% 98%;
+    --foreground: 222.2 84% 4.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+ 
+    --primary: var(--brand-navy);
+    --primary-foreground: 210 40% 98%;
+ 
+    --accent: var(--brand-blue);
+    --accent-foreground: 210 40% 98%;
+ 
+    --border: 214.3 31.8% 91.4%;
+    --radius: 0.75rem;
+  }
+}
+
+body {
+  @apply bg-slate-50 text-slate-900 antialiased;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-300 rounded-full hover:bg-slate-400 transition-colors;
+}

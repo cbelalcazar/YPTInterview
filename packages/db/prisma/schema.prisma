@@ -1,0 +1,52 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Company {
+  id        String        @id @default(uuid())
+  name      String        @unique
+  sector    String
+  estimates KPIEstimate[]
+}
+
+model Retailer {
+  id        String        @id @default(uuid())
+  name      String        @unique
+  estimates KPIEstimate[]
+}
+
+model KPI {
+  id        String        @id @default(uuid())
+  name      String        @unique
+  format    String
+  estimates KPIEstimate[]
+}
+
+model KPIEstimate {
+  id          String    @id @default(uuid())
+  companyId   String
+  company     Company   @relation(fields: [companyId], references: [id])
+  kpiId       String
+  kpi         KPI       @relation(fields: [kpiId], references: [id])
+  retailerId  String
+  retailer    Retailer  @relation(fields: [retailerId], references: [id])
+  value       Float
+  period      DateTime
+  isMtd       Boolean   @default(false)
+  asOf        DateTime  @default("1970-01-01T00:00:00Z")
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([companyId, kpiId, retailerId, period, isMtd, asOf])
+  @@index([companyId, kpiId, period])
+}
+
+model User {
+  id           String @id @default(uuid())
+  username     String @unique
+  passwordHash String
+}
