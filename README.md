@@ -124,3 +124,9 @@ The dynamic importer expects a CSV file with the following columns. All columns 
 3.  **Performance:** For the sector aggregation endpoint, I would implement a **Layer 2 Cache (Redis)** with a 1-hour TTL, as the sector benchmark does not change with every MTD snapshot, significantly optimizing response times.
 4.  **Data Integrity:** I will add a **JSON Schema Validation** layer (using Fastify-AJV) before the Prisma upsert to ensure CSV data strictly follows the type contract and prevent data corruption.
 
+---
+
+## ⚖️ License
+
+This project is licensed under a custom **Interview Evaluation License**. It is provided solely for the purpose of technical evaluation by the hiring team at YipitData. Commercial use, reproduction, or using this software as a prototype for internal product development is strictly prohibited. See the [LICENSE](./LICENSE) file for full details.
+
