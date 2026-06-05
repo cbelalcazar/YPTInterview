@@ -57,18 +57,23 @@ The application uses WebSockets to broadcast updates. When data is imported or a
 
 The project includes a **Model Context Protocol (MCP)** server that allows LLMs like **Claude Desktop** or **Cursor** to query your data semantically.
 
-### 1. Quick Test with MCP Inspector
-The fastest way to verify the MCP server:
+### Option 1: Quick Test with MCP Inspector (Recommended)
+If you don't have a desktop LLM client, you can use the official web-based inspector to interact with the tools directly:
+
 ```bash
-# 1. Build the project
+# 1. Ensure the project is built
 yarn build
 
 # 2. Run the official inspector
 npx @modelcontextprotocol/inspector node apps/mcp-server/dist/index.js
 ```
-*Try tools like `list_kpis`, `search_companies`, and `get_kpi_analysis`.*
+*   Click the **localhost:5173** link in your terminal.
+*   Go to the **Tools** tab.
+*   Run `list_kpis` to see available metrics.
+*   Run `search_companies` (query: "Trendy") to get a UUID.
+*   Run `get_kpi_analysis` using the IDs found in the previous steps.
 
-### 2. Connecting to Claude Desktop
+### Option 2: Connecting to Claude Desktop
 To see Claude perform autonomous analysis, add this to your `claude_desktop_config.json`:
 *(Path: `~/Library/Application Support/Claude/claude_desktop_config.json`)*
 
