@@ -32,18 +32,23 @@ describe('DashboardClient Component', () => {
 
     // Mock Fetch
     global.fetch = vi.fn().mockImplementation((url: string) => {
-        if (url.includes('/companies')) return Promise.resolve({ json: () => Promise.resolve([{ id: 'comp-1', name: 'Trendy Shoe Brand', sector: 'Footwear' }]) })
-        if (url.includes('/kpis')) return Promise.resolve({ json: () => Promise.resolve([{ id: 'kpi-1', name: 'GMV' }, { id: 'kpi-2', name: 'Units Sold' }, { id: 'kpi-3', name: 'ASP' }]) })
+        if (url.includes('/companies')) return Promise.resolve({ ok: true, json: () => Promise.resolve([{ id: 'comp-1', name: 'Trendy Shoe Brand', sector: 'Footwear' }]) })
+        if (url.includes('/kpis')) return Promise.resolve({ ok: true, json: () => Promise.resolve([{ id: 'kpi-1', name: 'GMV' }, { id: 'kpi-2', name: 'Units Sold' }, { id: 'kpi-3', name: 'ASP' }]) })
+        if (url.includes('/retailers')) return Promise.resolve({ ok: true, json: () => Promise.resolve([{ id: 'ret-1', name: 'Sole City' }]) })
+        if (url.includes('/sectors')) return Promise.resolve({ ok: true, json: () => Promise.resolve(['Footwear']) })
         if (url.includes('/analysis')) return Promise.resolve({ 
             ok: true,
             json: () => Promise.resolve({ 
                 kpi: { name: 'GMV' }, 
                 mtd: { value: 650000, period: '2023-10-01' }, 
                 history: [{ period: '2023-10-01', value: 1200000 }],
-                trends: { mom: 12.5, yoy: 50 }
+                trends: { mom: 12.5, yoy: 50 },
+                breakdown: [{ retailerName: 'Sole City', value: 1200000 }],
+                evolution: [{ asOf: '2023-10-01T12:00:00Z', value: 650000 }]
             }) 
         })
-        return Promise.reject(new Error("Unknown URL"))
+        if (url.includes('/rankings')) return Promise.resolve({ ok: true, json: () => Promise.resolve([{ companyName: 'Trendy Shoe Brand', value: 1200000 }]) })
+        return Promise.reject(new Error(`Unknown URL: ${url}`))
     }) as any
   })
 

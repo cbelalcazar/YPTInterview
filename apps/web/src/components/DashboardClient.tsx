@@ -11,7 +11,6 @@ import { RankingChart } from './RankingChart'
 import { KPI_KEYS, QUERY_MODES, API_URL, WS_URL } from '../lib/constants'
 import { TrendingUp, Package, DollarSign, Download, Bell, Activity, ChevronRight, BarChart3, Calendar, Building2, LayoutGrid, Zap, Loader2, Upload, X } from 'lucide-react'
 
-// Real data structures matching our API
 interface KpiData {
   period: string;
   value: number;
@@ -37,7 +36,6 @@ export function DashboardClient() {
   const [timeRange, setTimeRange] = useState<'13m' | '6m' | 'ytd'>('13m')
   const [isImportModalOpen, setIsImportModalOpen] = useState(false)
   
-  // Global Context State
   const [queryMode, setQueryMode] = useState<QueryMode>(QUERY_MODES.ANALYZE)
   const [selectedRetailer, setSelectedRetailer] = useState<Entity | null>(null)
   const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null)
@@ -48,7 +46,6 @@ export function DashboardClient() {
   const [companiesList, setCompaniesList] = useState<Entity[]>([])
   const [sectorsList, setSectorsList] = useState<string[]>([])
   
-  // Real data state
   const [isLoading, setIsLoading] = useState(true)
   const [companyContext, setCompanyContext] = useState<any>(null)
   const [gmvAnalysis, setGmvAnalysis] = useState<AnalysisResponse | null>(null)
@@ -62,16 +59,26 @@ export function DashboardClient() {
     try {
       if (showLoading) setIsLoading(true)
       
-      // 1. Get entities for builders
       const compRes = await fetch(`${API_URL}/companies`)
+      if (!compRes.ok) throw new Error(`Companies fetch failed`)
       const companies = await compRes.json()
       setCompaniesList(companies)
       
+      if (companies.length === 0) {
+        setIsLoading(false)
+        return
+      }
+
       const currentCompanyId = selectedCompanyId || companies[0]?.id
       const company = companies.find((c: any) => c.id === currentCompanyId)
+      if (!company) {
+        setIsLoading(false)
+        return
+      }
       setCompanyContext(company)
 
       const kpiRes = await fetch(`${API_URL}/kpis`)
+      if (!kpiRes.ok) throw new Error(`KPIs fetch failed`)
       const kpis = await kpiRes.json()
       setKpisList(kpis.map((k: any) => ({ id: k.id, name: k.name })))
       
@@ -80,15 +87,18 @@ export function DashboardClient() {
       const aspKpi = kpis.find((k: any) => k.name === KPI_KEYS.ASP)
 
       const retRes = await fetch(`${API_URL}/retailers`)
-      const retailers = await retRes.json()
-      setRetailersList(retailers)
+      if (retRes.ok) {
+        const retailers = await retRes.json()
+        setRetailersList(retailers)
+      }
 
       const secRes = await fetch(`${API_URL}/sectors`)
-      const sectors = await secRes.json()
-      setSectorsList(sectors)
-      if (!selectedSector && sectors.length > 0) setSelectedSector(sectors[0])
+      if (secRes.ok) {
+        const sectors = await secRes.json()
+        setSectorsList(sectors)
+        if (!selectedSector && sectors.length > 0) setSelectedSector(sectors[0])
+      }
 
-      // 2. Fetch based on mode
       const currentKpi = activeKpi === 'GMV' ? gmvKpi : (activeKpi === 'UNITS' ? unitsKpi : aspKpi)
       if (!currentKpi) return
 
@@ -115,15 +125,19 @@ export function DashboardClient() {
           const compData = await resComp.json()
           const sectorData = await resSec.json()
           
-          const merged = compData.history.map((h: any) => {
-            const s = sectorData.history.find((sh: any) => sh.period === h.period)
-            return {
-              period: h.period,
-              companyValue: h.value,
-              sectorValue: s?.value || 0
-            }
-          })
-          setComparisonData(merged)
+          if (compData.history && sectorData.history) {
+            const merged = compData.history.map((h: any) => {
+              const s = sectorData.history.find((sh: any) => sh.period === h.period)
+              return {
+                period: h.period,
+                companyValue: h.value,
+                sectorValue: s?.value || 0
+              }
+            })
+            setComparisonData(merged)
+          } else {
+            setComparisonData([])
+          }
         } else {
           setComparisonData([]);
         }
@@ -140,7 +154,6 @@ export function DashboardClient() {
     }
   }
 
-  // Initial fetch and refetch on filter change
   useEffect(() => {
     fetchData()
   }, [selectedRetailer, selectedCompanyId, selectedSector, queryMode, activeKpi])
@@ -161,11 +174,15 @@ export function DashboardClient() {
     }
   }, [])
 
-  const getActiveAnalysis = () => activeKpi === 'GMV' ? gmvAnalysis : (activeKpi === 'UNITS' ? unitsAnalysis : aspAnalysis)
+  const getActiveAnalysis = () => {
+    if (activeKpi === 'GMV') return gmvAnalysis
+    if (activeKpi === 'UNITS') return unitsAnalysis
+    return aspAnalysis
+  }
 
   const getFilteredData = () => {
     const analysis = getActiveAnalysis()
-    if (!analysis) return []
+    if (!analysis || !analysis.history) return []
     
     const baseData = analysis.history
     if (timeRange === '6m') return baseData.slice(0, 6)
@@ -203,7 +220,6 @@ export function DashboardClient() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-10 py-10 px-6">
-      {/* Notifications */}
       <div className="fixed top-6 right-6 z-50 space-y-3 w-80 text-left">
         {notifications.map((n, i) => (
           <div key={i} className="bg-brand-navy text-white px-5 py-4 rounded-xl flex items-start gap-4 shadow-2xl border-l-4 border-brand-teal backdrop-blur-md">
@@ -218,7 +234,6 @@ export function DashboardClient() {
         ))}
       </div>
 
-      {/* Header & Global Navigation Search */}
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between border-b border-slate-200 pb-10">
         <div className="flex-1 text-left">
            <div className="flex flex-wrap items-center gap-2 mb-3">
@@ -228,7 +243,6 @@ export function DashboardClient() {
               <div className="h-1 w-1 rounded-full bg-slate-300" />
               <span className="text-slate-400 text-xs font-bold uppercase tracking-wider">{companyContext?.sector} Intelligence</span>
               
-              {/* Tooltip Glossary */}
               <div className="group relative ml-2">
                 <div className="cursor-help bg-slate-100 text-slate-500 text-[10px] font-black h-5 w-5 flex items-center justify-center rounded-full hover:bg-brand-teal hover:text-white transition-colors">?</div>
                 <div className="absolute top-full left-0 mt-2 w-64 p-4 bg-brand-navy text-white text-[11px] rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-[60] border border-white/10 backdrop-blur-md">
@@ -284,8 +298,7 @@ export function DashboardClient() {
         </div>
       </div>
 
-      {/* KPI Insight Cards - Only in ANALYZE mode */}
-      {queryMode === 'ANALYZE' && (
+      {queryMode === QUERY_MODES.ANALYZE && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {[
             { 
@@ -353,21 +366,20 @@ export function DashboardClient() {
         </div>
       )}
 
-      {/* Primary Analytical View */}
       <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden">
          <div className="px-10 py-10 border-b border-slate-100 flex flex-col xl:flex-row xl:items-center justify-between gap-8 bg-gradient-to-r from-slate-50/80 to-transparent">
             <div className="text-left">
                <div className="flex items-center gap-3 mb-2">
                   <BarChart3 className="h-6 w-6 text-brand-teal" />
                   <h3 className="text-2xl font-black text-brand-navy tracking-tight uppercase">
-                    {queryMode === 'RANK' ? 'Market Leaderboard' : 'Trajectory Matrix'}
+                    {queryMode === QUERY_MODES.RANK ? 'Market Leaderboard' : 'Trajectory Matrix'}
                   </h3>
                </div>
                <p className="text-xs text-brand-teal font-black uppercase tracking-[0.3em] opacity-60">Empirical KPI Data Feed</p>
             </div>
 
             <div className="flex flex-wrap items-center gap-6">
-               {queryMode !== 'RANK' && (
+               {queryMode !== QUERY_MODES.RANK && (
                  <div className="flex items-center gap-2 bg-slate-100 p-1.5 rounded-2xl border border-slate-200 shadow-inner">
                     <button onClick={() => setTimeRange('13m')} className={`px-5 py-2.5 text-[10px] font-black rounded-xl uppercase tracking-widest transition-all ${timeRange === '13m' ? 'bg-white text-brand-navy shadow-md' : 'text-slate-400 hover:text-slate-600'}`}>13m</button>
                     <button onClick={() => setTimeRange('6m')} className={`px-5 py-2.5 text-[10px] font-black rounded-xl uppercase tracking-widest transition-all ${timeRange === '6m' ? 'bg-white text-brand-navy shadow-md' : 'text-slate-400 hover:text-slate-600'}`}>6m</button>
@@ -384,11 +396,11 @@ export function DashboardClient() {
          </div>
          
          <div className="p-12 bg-white">
-            {queryMode === 'ANALYZE' && (
+            {queryMode === QUERY_MODES.ANALYZE && (
               <div className="flex flex-col lg:flex-row gap-12 text-left">
                 <div className="w-full lg:w-2/3">
                   {getFilteredData().length > 0 ? (
-                    <KPIChart data={getFilteredData()} kpiName={activeKpi} format={activeKpi === 'GMV' ? 'CURRENCY' : 'NUMBER'} />
+                    <KPIChart data={getFilteredData()} kpiName={activeKpi} format={(activeKpi === 'GMV' || activeKpi === 'ASP') ? 'CURRENCY' : 'NUMBER'} />
                   ) : (
                     <div className="h-96 flex flex-col items-center justify-center text-slate-400">
                        <BarChart3 className="h-12 w-12 mb-4 opacity-20" />
@@ -398,17 +410,17 @@ export function DashboardClient() {
                   )}
                 </div>
                 <div className="w-full lg:w-1/3 flex flex-col gap-8 border-l border-slate-100 pl-0 lg:pl-12">
-                  <RetailerBreakdown data={getActiveAnalysis()?.breakdown || []} format={activeKpi === 'GMV' ? 'CURRENCY' : 'NUMBER'} />
-                  {!selectedRetailer && <SnapshotEvolution data={getActiveAnalysis()?.evolution || []} format={activeKpi === 'GMV' ? 'CURRENCY' : 'NUMBER'} />}
+                  <RetailerBreakdown data={getActiveAnalysis()?.breakdown || []} format={(activeKpi === 'GMV' || activeKpi === 'ASP') ? 'CURRENCY' : 'NUMBER'} />
+                  {!selectedRetailer && <SnapshotEvolution data={getActiveAnalysis()?.evolution || []} format={(activeKpi === 'GMV' || activeKpi === 'ASP') ? 'CURRENCY' : 'NUMBER'} />}
                 </div>
               </div>
             )}
 
-            {queryMode === 'COMPARE' && (
+            {queryMode === QUERY_MODES.COMPARE && (
               comparisonData.length > 0 ? (
                 <ComparisonChart 
                   data={comparisonData} 
-                  format={activeKpi === 'GMV' ? 'CURRENCY' : 'NUMBER'} 
+                  format={(activeKpi === 'GMV' || activeKpi === 'ASP') ? 'CURRENCY' : 'NUMBER'} 
                   companyName={companyContext?.name} 
                   sectorName={selectedSector || companyContext?.sector} 
                 />
@@ -421,11 +433,11 @@ export function DashboardClient() {
               )
             )}
 
-            {queryMode === 'RANK' && (
+            {queryMode === QUERY_MODES.RANK && (
               rankingData.length > 0 ? (
                 <RankingChart 
                   data={rankingData} 
-                  format={activeKpi === 'GMV' ? 'CURRENCY' : 'NUMBER'} 
+                  format={(activeKpi === 'GMV' || activeKpi === 'ASP') ? 'CURRENCY' : 'NUMBER'} 
                 />
               ) : (
                 <div className="h-96 flex flex-col items-center justify-center text-slate-400">
@@ -438,7 +450,6 @@ export function DashboardClient() {
          </div>
       </div>
 
-      {/* Corporate Compliance Footer */}
       <div className="flex flex-col items-center justify-center gap-6 py-12 border-t border-slate-100">
          <p className="text-[9px] text-slate-300 font-bold uppercase tracking-[0.5em]">YipitData Intelligence Ecosystem © 2026</p>
       </div>
