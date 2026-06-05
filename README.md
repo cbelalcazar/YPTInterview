@@ -89,6 +89,26 @@ To see Claude perform autonomous analysis, add this to your `claude_desktop_conf
 
 ---
 
+## 📂 CSV Data Format Specifications
+
+The dynamic importer expects a CSV file with the following columns. All columns are **required** for a successful ingestion.
+
+| Column | Type | Description | Example |
+| :--- | :--- | :--- | :--- |
+| `company_id` | `String` | Unique slug for the brand | `trendy_shoe_brand` |
+| `company_name` | `String` | Display name of the brand | `Trendy Shoe Brand` |
+| `sector` | `String` | Industry category | `Footwear` |
+| `retailer_id` | `String` | Unique slug for the point of sale | `sole_city` |
+| `retailer_name` | `String` | Display name of the retailer | `Sole City` |
+| `kpi_id` | `String` | Unique slug for the metric | `gmv` |
+| `kpi_name` | `String` | Display name (GMV, Units Sold, ASP) | `GMV` |
+| `period` | `String` | Monthly period in `YYYY-MM` format | `2026-06` |
+| `estimate_type` | `String` | Type of data: `historical` or `mtd` | `mtd` |
+| `value` | `Float` | The numeric KPI value | `358000250.50` |
+| `as_of` | `ISO8601` | Timestamp for MTD snapshots (optional for historical) | `2026-06-04T17:00:00Z` |
+
+---
+
 ## 🏗️ Architectural Decisions
 
 *   **Monorepo (Turborepo):** Shared database models across API, Web, and MCP ensuring 100% type safety and consistent business logic.
