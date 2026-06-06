@@ -11,4 +11,4 @@ export const QUERY_MODES = {
 } as const;
 
 export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-export const WS_URL = API_URL.replace('http', 'ws');
+export const WS_URL = `${API_URL.replace('http', 'ws')}/ws`;

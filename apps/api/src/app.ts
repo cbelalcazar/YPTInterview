@@ -1,5 +1,13 @@
 import { FastifyPluginAsync } from 'fastify';
 import cors from '@fastify/cors';
+
+process.on('uncaughtException', (err) => {
+  console.error('CRITICAL: Uncaught Exception:', err);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('CRITICAL: Unhandled Rejection:', reason);
+});
 import multipart from '@fastify/multipart';
 import dbPlugin from './plugins/db';
 import jwtPlugin from './plugins/jwt';
@@ -22,6 +30,9 @@ const app: FastifyPluginAsync<AppOptions> = async (
 ): Promise<void> => {
   await fastify.register(cors, {
     origin: '*',
+    methods: ['GET', 'PUT', 'POST', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin'],
+    credentials: true,
   });
 
   await fastify.register(multipart);

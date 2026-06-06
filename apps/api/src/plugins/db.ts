@@ -8,13 +8,22 @@ declare module 'fastify' {
 }
 
 export default fp(async (fastify) => {
+  fastify.log.info('Prisma: Initializing client...');
   const prisma = new PrismaClient();
 
-  await prisma.$connect();
+  try {
+    fastify.log.info('Prisma: Attempting to connect...');
+    await prisma.$connect();
+    fastify.log.info('Prisma: Connected successfully');
+  } catch (err) {
+    fastify.log.error({ err }, 'Prisma: Connection failed');
+    throw err;
+  }
 
   fastify.decorate('db', prisma);
 
-  fastify.addHook('onClose', async (fastify) => {
-    await fastify.db.$disconnect();
+  fastify.addHook('onClose', async (fastifyInstance) => {
+    fastify.log.info('Prisma: Disconnecting...');
+    await fastifyInstance.db.$disconnect();
   });
 });

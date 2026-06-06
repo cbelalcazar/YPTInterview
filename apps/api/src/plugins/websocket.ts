@@ -19,6 +19,10 @@ export default fp(async (fastify) => {
       connection.socket.on('message', (message: any) => {
       });
 
+      connection.socket.on('error', (error: any) => {
+        fastify.log.error({ err: error }, 'WebSocket connection error');
+      });
+
       connection.socket.on('close', () => {
         fastify.log.info('Client disconnected from WebSocket');
       });
